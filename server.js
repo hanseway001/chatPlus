@@ -5,6 +5,7 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter
 
 let userList = []
 let userNumber = 0
+let adminPassword = 'admin'
 
 //cerat log file
 const csvWriter = createCsvWriter({
@@ -41,14 +42,58 @@ const server = net.createServer((client) => {
         // console.log(data.toString())
         let message = data.trim()
         console.log(message)
-        console.log(`${client.id} said: ${message}`)
+        let splitInput = message.split(/[ ,]+/)
+        console.log(splitInput)
+        console.log(`${client.id}: ${message}`)
         csvWriter.writeRecords([{user: `${client.id}: `, comment: message}])
-
-        userList.forEach( user => { 
-            if ( user !== client) {
-                user.write(`${client.id} said:   ${data}`)
+        // if ( message.startsWith('/')){
+        //     console.log('boo')
+        // }
+        if (splitInput[0] === '/w') {
+            console.log(splitInput)
+            if (splitInput.length <= 2) {
+                console.log('Incorrect user input')
+                client.write('Incorect Input, Please enter a valid message.')
+            } 
+            userList.forEach( user => {
+                if ( user === client) {
+                    console.log('Cant wisper self. Please enter different client')
+                    csvWriter.writeRecords([{user: 'Server: ', comment:`${client.id} Tried to wisper self}`}])   
+                } else {
+                    user.write(`${client.id}: ${splitInput[2]}`)
+                }
+            })
+        }  else if(splitInput[0] === '/username') {
+            userList.forEach( user => {
+                if ( user === client) {
+                    console.log(`${client.id} changed username to ${splitInput[1]}`)
+                    user.id = splitInput[1]
+                    csvWriter.writeRecords([{user: 'Server: ', comment:`${client.id} changed username to ${splitInput[1]}`}])
+                }
+            })
+        }  else if(splitInput[0] === '/kick') {
+            if( splitInput[2] === adminPassword) {
+                userList.forEach( user => {
+                    if ( user.id === splitInput[1]) {
+                        console.log(`${client.id} has been kicked`)
+                        user.end()
+                        csvWriter.writeRecords([{user: 'Server: ', comment:`${client.id} has been kicked`}])
+                    }
+                })
             }
-        })
+        } else if (splitInput[0] === '/clientlist') {
+            userList.forEach( user => {
+                client.write(user.id)
+            })
+        } else {
+
+            userList.forEach( user => { 
+                if ( user !== client) {
+                    user.write(`${client.id} said:   ${message}`)
+                }
+            })
+        }
+    
     })
 
     client.on('end', () => {
@@ -69,7 +114,7 @@ const server = net.createServer((client) => {
 
     
 }).listen(6000, () => {
-    console.log('Listening on port 6000')
+    console.log('Listening on port 600')
 });
 
 server.on('error', (err) => {
