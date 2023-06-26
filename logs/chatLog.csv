@@ -1,7 +1,6 @@
 User,Comment
 Server: ,User Guest0 has joined.
 Server: ,User Guest1 has joined.
-Server: ,Guest1 Tried to wisper self}
-Guest1: ,/w Guest0 hello
-Guest1: ,/w
-Server: ,Guest1 Tried to wisper self}
+Guest1: ,/username bob
+Server: ,bob changed username to bob
+bob: ,/username bob
