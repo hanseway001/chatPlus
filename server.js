@@ -94,15 +94,30 @@ const server = net.createServer((client) => {
 
                 }
             }  else if(splitInput[0] === '/kick') {
-                if( splitInput[2] === adminPassword) {
-                    userList.forEach( user => {
-                        if ( user.id === splitInput[1]) {
-                            console.log(`${client.id} has been kicked`)
-                            user.end()
-                            csvWriter.writeRecords([{user: 'Server: ', comment:`${client.id} has been kicked`}])
+                if (splitInput.length != 3) {
+                    console.log('Incorrect user input')
+                    client.write('Incorect Input, Please enter a valid input.')
+                } else {
+                    if( splitInput[2] === adminPassword) {
+                        // let idExists = false
+
+                        for (const user of userList) {
+                            if (user.id === splitInput[1]) {
+                                console.log(`${client.id} has been kicked`)
+                                user.end()
+                                csvWriter.writeRecords([{user: 'Server: ', comment:`${client.id} has been kicked`}])
+                            }
+                            else {
+                                console.log('Client not kicked, No client by that name')
+                                client.write('Client not kicked, No client by that name')
+                            }
                         }
-                    })
-                }
+                    } else {
+                        console.log('Incorrect Password')
+                        client.write('Incorect Password, Please enter a valid input.')
+                    }
+                    
+                }   
             } else if (splitInput[0] === '/clientlist') {
                 userList.forEach( user => {
                     client.write(user.id)
